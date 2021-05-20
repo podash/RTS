@@ -1,77 +1,94 @@
 import matplotlib.pyplot as plt  # lib for graphs
-import numpy as np  # lib for math operations
+import random
+import numpy as np
+import math
+import time
 
-# constants
-n = 10  # number of harmonics
-w = 1500  # max frequency
-N = 256  # number of descrete calls
+n = 10
+N = 256
+W0 = 150
+Wmax = 1500
+W = np.arange(W0, Wmax + W0, W0)
 
-# function for calculating random signal
-def formula(a, w, t, phi):
-    return a*np.sin(w*t+phi)
 
-# function for generation array of signals
-def generateSignals(n, w, N):
-    signals = [0]*N  # array of signals
-    w0 = w/n  # frequency
-    for _ in range(n):
-        a = np.random.rand()  # amplitude
-        phi = np.random.rand()  # phase
-
+def generator(n, N, W):
+    signals = np.zeros(N)
+    for i in range(n):
+        A = random.random()
+        phi = random.random()
         for t in range(N):
-            signals[t] += formula(a, w0, t, phi)
-        w0 += w0
+            signals[t] += A * math.sin(W[i] * t + phi)
+
     return signals
 
-# correlation function
-def correlation(signal1, signal2):
 
-    Mx1 = np.average(signal1)  # math expectation
-    Mx2 = np.average(signal2)  # math expectation
-    sd1 = np.std(signal1)  # standart deviation == sqrt(dispersion)
-    sd2 = np.std(signal2)  # standart deviation == sqrt(dispersion)
-    length = len(signal1) // 2
-    res = []
+def corelvalue(signal1, signal2):
+    size = len(signal1)
+    assert size == len(signal2)
 
-    for t in range(length):
-        covarience = 0
+    Mx1 = np.average(signal1)
+    Mx2 = np.average(signal2)
 
-        for l in range(length):
-            covarience += (signal1[l]-Mx1)*(signal2[l + t]-Mx2) / (length-1)
+    result = []
+    for i in range(size):
+        result.append((signal1[i] - Mx1) * (signal2[i] - Mx2))
 
-        res.append((covarience / sd1 * sd2))
+    return sum(result)/(size - 1)
 
-    return res
 
-# autocorrelation function
-def autocorrelation(signal):
-    return correlation(signal, signal)
+def autocorel(signal):
+    size = round(len(signal)/2)
 
-signals = generateSignals(n, w, N)
-signals_copy = generateSignals(n, w, N)
+    result = []
+    for i in range(size):
+        result.append(corelvalue(signal[0:size], signal[i:size+i]))
+        print(signal[i:size+i])
 
-print('Mx:', np.average(signals))  # Average
-print('Dx:', np.var(signals))  # Dispersion
+    return result
+   
+def crosscorel(signal1,signal2):
+    size = round(len(signal1)/2)
 
-# plotting
+    result = []
+    for i in range(size):
+        result.append(corelvalue(signal1[0:size], signal2[i:size+i]))
 
-# signals 
-plt.plot(signals)
-plt.plot(signals_copy)
+    return result
+
+# signal_third = generator(n,N,W)
+# time_start = time.time()
+# autocorel(signal_third)
+# duration_1 = time.time() - time_start
+# # print("%s seconds" %duration_1)
+signal_first = generator(n,N,W)
+signal_second = generator(n,N,W)
+# time_start_1 = time.time()
+# crosscorel(signal_first,signal_second)
+# duration_2 = time.time() -  time_start_1
+# print("%s seconds" % (duration_1 - duration_2))
+
+# autocorel(signal_third)
+print(crosscorel(signal_first,signal_second))
+print('Mx:', np.average(signal_first)) 
+print('Dx:', np.var(signal_second))  
+
+plt.plot(signal_first)
+plt.plot(signal_second)
 plt.xlabel('time')
 plt.ylabel('x')
 plt.title('Random generated signals 1, 2')
 plt.figure()
 
-# cross-correlation
-plt.plot(correlation(signals, signals_copy))
+
+#cross-correlation
+plt.plot(crosscorel(signal_first, signal_second)) 
 plt.xlabel('time')
 plt.ylabel('correlation')
 plt.title('cross-correlation')
 plt.figure()
 
-# autocorrelation
-plt.plot(autocorrelation(signals))
+## autocorrelation
+plt.plot(autocorel(signal_first))  
 plt.xlabel('time')
 plt.ylabel('correlation')
 plt.title('autocorrelation')
