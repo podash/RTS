@@ -30,4 +30,4 @@ function Facto(number) {
 
 ### Screenshots
 
-![screenshot1](./sources/screenshot_1.ipg)
+![screenshot1](./sources/screenshot_1.jpg)
