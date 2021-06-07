@@ -1,5 +1,5 @@
 function Facto(number) {
-    if (number < 0) return {};
+    if (number < 0 || number.length > 7) return {};
   
     if (!(number % 2)) return { x: number / 2, y: 2 };
   

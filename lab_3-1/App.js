@@ -3,10 +3,12 @@ import React from "react";
 import { StyleSheet, Text, View, TextInput, Button } from "react-native";
 import { useState } from "react";
 import Facto from "./Ferma.js";
+import { useAlert } from "react-alert";
 
 export default function App() {
   const [data, setData] = useState(null);
   const [res, setRes] = useState(null);
+  const alert = useAlert();
   return (
     <View style={styles.container}>
       <TextInput
@@ -16,6 +18,7 @@ export default function App() {
           setData(numb);
           keyboardType = "numeric";
           console.log(data);
+          if (numb.length > 7) alert.show('Максимальна довжина 7 символів');
         }}
       />
 
