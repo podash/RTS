@@ -1,5 +1,9 @@
 # RTS lab 3.3
 
+### Task screenshot
+![screenshot1](/screenshot_task.jpg)
+
+
 ### Code
 
 ```javascript
