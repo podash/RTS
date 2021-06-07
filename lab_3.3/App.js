@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, TextInput, Button } from 'react-native';
 import Genetic from './Genetic'
+import { transitions, positions, Provider as AlertProvider } from 'react-alert'
+import AlertTemplate from 'react-alert-template-basic'
 
 export default function App() {
   const [a, setA] = useState(null);
@@ -9,6 +11,9 @@ export default function App() {
   const [d, setD] = useState(null);
   const [y, setY] = useState(null);
   const [result, setResult] = useState('[]');
+  const alert = useAlert();
+
+  if (mutation.value < 1 || mutation.value > 100) alert.show('Можливі значення у проміжку 1 - 100');
 
   return (
     <SafeAreaView>
@@ -48,6 +53,16 @@ export default function App() {
           keyboardType="numeric"
         />
       </View>
+
+          <input style={styles.mutation}
+            placeholder="Оберіть % мутації від 1 до 100"
+            name="mutation"
+            type="number"
+            min="1"
+            max="100"
+            value={mutation}
+          />
+
       <Text style={styles.result}>
         {`[x1, x2, x3, x4] = ${result}`}
       </Text>
@@ -95,5 +110,13 @@ const styles = StyleSheet.create({
     width: 150,
     backgroundColor: '#9d9fe7',
     borderRadius: 10,
+  },
+  mutation: {
+  width: '90%',
+  backgroundColor: '#FFFFFF',
+  border: 2,
+  borderColor: '#9D9FE7',
+  borderRadius: 10,
+  color: '#575757',
   },
 });
