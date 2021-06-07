@@ -1,65 +1,81 @@
-import matplotlib.pyplot as plt  # lib for graphs
-import numpy as np  # lib for math operations
-import math  # lib for math operations
+import random
+import math
+import matplotlib.pyplot as plt
+import time
+from multiprocessing import Process, Pipe, Manager
+from threading import Thread
 
-# constants
-n = 10  # number of harmonics
-w = 1500  # max frequency
-N = 256  # number of descrete calls
+n = 10
+omegaMax = 1200
+N = 64
+k = 1024
+tau = 512
+W = []
 
+def Plot(g):
+    A = []
+    fi = []
+    for i in range(n):
+        A.append(random.random())
+        fii = random.random() * omegaMax
+        fi.append(fii)
+    for i in range(k):
+        res = 0
+        for j in range(n):
+            res += A[j] * math.sin((omegaMax / (j + 1)) * i + fi[j])
+        g.append(res)
+        yy = i
 
-# function for calculating random signal
-def formula(a, w, t, phi):
-    return a*np.sin(w*t+phi)
+def Fourier(g):
+    Fp = []
+    Re = []
+    Im = []
+    for i in range(len(g)):
+        Re.append(math.sin(i * 2 * math.pi / 4))
+        Im.append(math.cos(i * 2 * math.pi / 4))
+        W.append(math.sqrt((Re[i] * Re[i]) + (Im[i] * Im[i])))
+    for k in range(len(g) - 1):
+        Wpk = 0
+        for p in range(len(g) - 1):
+            Wpk = Wpk + W[(p * k) % len(g)]
+        Fp.append(g[k] * Wpk)
+    return Fp
 
-# function for generation array of signals
-def generateSignals(n, w, N):
-    signals = [0]*N  # array of signals
-    w0 = w/n  # frequency
-    for _ in range(n):
+def FFT(g1, g2):
+    fastg = []
+    for p in range(int(N / 2) - 1):
+        fastg.append(g1[p] + g2[p] * W[p])
+    for p in range(int(N / 2), N - 2):
+        fastg.append(g1[p - int(N/2)] - g2[p - int(N/2)] * W[p])
+    return fastg
 
-        for t in range(N):
-            a = np.random.rand()  # amplitude
-            phi = np.random.rand()  # phase
-            signals[t] += formula(a, w0, t, phi)
-        w0 += w0
-    return signals
+def ParallelCompute(g, Fp):
+    Fp.extend(Fourier(g))
 
-def coeff(pk, N):
-    exp = 2*math.pi*pk/N
-    return complex(math.cos(exp), -math.sin(exp))
+if __name__ == "__main__":
+    xfast = []
+    x = []
 
-# function for calculating Discrete Fourier Transform
-def fft(signals):
-    N = len(signals)
-    l = int(N/2)
-    spectrum = [0] * N
+    x1 = []
+    x2 = []
+    Fp1 = []
+    Fp2 = []
+    Plot(x)
+    Plot(xfast)
 
-    if N == 1:
-        return signals
-    evens = fft(signals[::2])
-    odds = fft(signals[1::2])
+    for i in range(N):
+        if(i % 2 == 1):
+            x2.append(xfast[i])
+        else:
+            x1.append(xfast[i])
+    p1 = Thread(target=ParallelCompute, args=(x1, Fp1))
+    p2 = Thread(target=ParallelCompute, args=(x2, Fp2))
+    p1.start()
+    p2.start()
+    p1.join()
+    p2.join()
+    FastFp = FFT(Fp1, Fp2)
+    Fp = Fourier(x)
 
-    for k in range(l):
-        spectrum[k] = evens[k] + odds[k] * coeff(k, N)
-        spectrum[k + l] = evens[k] - odds[k] * coeff(k, N)
-
-    return spectrum
-
-signals = generateSignals(n, w, N)
-
-# plotting
-
-# signals
-plt.plot(signals)
-plt.xlabel('time')
-plt.ylabel('x')
-plt.title('Random generated signal')
-plt.figure()
-
-#fft
-plt.plot(fft(signals))
-plt.xlabel('p')
-plt.ylabel('F(p)')
-plt.title('Fast Fourier Transform')
-plt.show()
+    plt.stem([a - b for a, b in zip(FastFp, Fp)])
+    plt.show()
