@@ -10,8 +10,8 @@ class Chromosome {
     calc = () =>
         this.genes.reduce((a, gene, i) => a + (gene * this.task[i]))
 
-    constructor({ genes, task, target }) {
-        Object.assign(this, { genes, task, target });
+    constructor({ genes, task, target, mutation }) {
+        Object.assign(this, { genes, task, target, mutation });
         this.calcFitness();
     }
 
@@ -61,8 +61,7 @@ class Genetic {
         const children = []
         for (let i = 0; i < this.population.length; i++) {
             const parents = this.population
-                .map((chromosome) => ({ chromosome, probability: Math.random() * (chromosome.fitness * 1000) }))
-                .sort((a, b) => a.probability - b.probability)
+                .map((chromosome) => ({ chromosome, mutation }))                
 
             const parent = parents[0].chromosome
             const partner = parents[1].chromosome
