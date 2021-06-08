@@ -70,7 +70,7 @@ export default function App() {
         <Button
           title="Calculate"
           color="#fff"
-          onPress={() => setResult(new Genetic([a, b, c, d], y).solve())}
+          onPress={() => setResult(new Genetic([a, b, c, d], y).solve(), mutation = mutation)}
         />
       </View>
 

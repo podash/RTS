@@ -5,6 +5,7 @@ class Chromosome {
     fitness = Infinity;
     task = [];
     target = 0;
+    mutation = 0;
 
     calc = () =>
         this.genes.reduce((a, gene, i) => a + (gene * this.task[i]))
